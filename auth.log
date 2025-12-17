@@ -1,0 +1,28 @@
+import re
+from collections import Counter
+
+def parse_auth_log(file_path):
+    failed_attempts = []
+    try:
+        with open(file_path, 'r') as f:
+            for line in f:
+                if "Failed password" in line:
+                    ip_match = re.search(r'from (\d+\.\d+\.\d+\.\d+)', line)
+                    if ip_match:
+                        failed_attempts.append(ip_match.group(1))
+    except FileNotFoundError:
+        print(f"File not found: {file_path}")
+        return Counter()
+    
+    return Counter(failed_attempts)
+
+if __name__ == "__main__":
+    log_file = "auth.log"  # Change this if you renamed your log
+    results = parse_auth_log(log_file)
+
+    print("Top suspicious IPs:")
+    if results:
+        for ip, count in results.most_common(10):
+            print(f"{ip}: {count} attempts")
+    else:
+        print("No suspicious login attempts found.")
